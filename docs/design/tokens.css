@@ -1,7 +1,7 @@
 /* ServiGest · tokens de diseño
  * Generado desde Figma (archivo ServiGest). No editar a mano: cambia la variable en Figma y vuelve a exportar.
  * Tema claro = "Empresarial AA"; oscuro = "Empresarial AA · Oscuro".
- * Uso: <html data-theme="light|dark" data-role="admin|tecnico|cliente">
+ * Uso: <html data-theme="light|dark" data-role="admin|coordinador|tecnico|cliente">
  */
 
 :root {
@@ -30,6 +30,9 @@
   --color-role-cliente: #0C7A56;
   --color-role-cliente-soft: #DCF2E9;
   --color-role-cliente-ink: #FFFFFF;
+  --color-role-coordinador: #1F5FB8;
+  --color-role-coordinador-soft: #E3ECF9;
+  --color-role-coordinador-ink: #FFFFFF;
 
   /* Rol por defecto: administrador */
   --color-accent: var(--color-role-admin);
@@ -156,6 +159,9 @@
   --color-role-cliente: #3FC596;
   --color-role-cliente-soft: #11302A;
   --color-role-cliente-ink: #04201A;
+  --color-role-coordinador: #7AAAF2;
+  --color-role-coordinador-soft: #172540;
+  --color-role-coordinador-ink: #071A38;
 }
 
 /* Tema oscuro según el sistema, si no se fijó un tema */
@@ -186,6 +192,9 @@
     --color-role-cliente: #3FC596;
     --color-role-cliente-soft: #11302A;
     --color-role-cliente-ink: #04201A;
+    --color-role-coordinador: #7AAAF2;
+    --color-role-coordinador-soft: #172540;
+    --color-role-coordinador-ink: #071A38;
   }
 }
 
@@ -194,6 +203,11 @@
   --color-accent: var(--color-role-admin);
   --color-accent-soft: var(--color-role-admin-soft);
   --color-accent-ink: var(--color-role-admin-ink);
+}
+[data-role="coordinador"] {
+  --color-accent: var(--color-role-coordinador);
+  --color-accent-soft: var(--color-role-coordinador-soft);
+  --color-accent-ink: var(--color-role-coordinador-ink);
 }
 [data-role="tecnico"] {
   --color-accent: var(--color-role-tecnico);

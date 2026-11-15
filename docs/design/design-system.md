@@ -9,7 +9,9 @@ Los valores de ejemplo (nombres, códigos de solicitud, sedes) de las pantallas 
 
 ## 1. Principios
 
-1. **Un solo sistema, tres roles.** Administrador, Técnico y Cliente comparten componentes y estructura; solo cambia el color de identidad del rol.
+1. **Un solo sistema, cuatro roles.** Administrador, Coordinador, Técnico y Cliente comparten componentes y estructura; solo cambia el color de identidad del rol.
+   - **Administrador (el sistema):** CRUD de usuarios, técnicos, clientes y sedes, catálogos, parámetros y auditoría; reportes globales.
+   - **Coordinador (la operación):** recibe, prioriza, aprueba, asigna y reasigna solicitudes y les da seguimiento. No crea ni edita datos maestros (solo los consulta).
 2. **El color tiene un trabajo.** El color del rol identifica quién usa la pantalla; el color de estado (verde, ámbar, rojo) solo marca estados y excepciones. Nada decorativo.
 3. **Notificaciones en un solo lugar.** Únicamente la campana de la barra superior; no hay opción "Notificaciones" duplicada en el menú lateral.
 4. **Prioridad por barras.** Los niveles de prioridad se leen por el número de barras; solo "Crítica" lleva color.
@@ -22,13 +24,13 @@ Los valores de ejemplo (nombres, códigos de solicitud, sedes) de las pantallas 
 ## 2. Cómo se aplican tema y rol
 
 ```html
-<html data-theme="light|dark" data-role="admin|tecnico|cliente">
+<html data-theme="light|dark" data-role="admin|coordinador|tecnico|cliente">
 ```
 
 | Eje | Figma | Código |
 |---|---|---|
 | Tema | Colección **Paleta**, modo `Empresarial AA` (claro) o `Empresarial AA · Oscuro` | `data-theme` |
-| Rol | Colección **Rol**, modos `Admin`, `Técnico`, `Cliente` | `data-role` |
+| Rol | Colección **Rol**, modos `Administrador`, `Técnico`, `Cliente`, `Coordinador` | `data-role` |
 
 Los modos `Triádica`, `Corporativa azul` y `Negro y blanco` de Paleta son exploraciones y **no se exportan**.
 
@@ -38,7 +40,7 @@ Las variables `accent`, `accent-soft` y `accent-ink` apuntan (alias) al color de
 
 ## 3. Fundamentos (tokens)
 
-Cada variable de Figma tiene su nombre CSS en "code syntax Web". Archivos exportados: `tokens.css`, `tokens.json` (W3C DTCG). Total: 71 variables y 3 estilos de efecto.
+Cada variable de Figma tiene su nombre CSS en "code syntax Web". Archivos exportados: `tokens.css`, `tokens.json` (W3C DTCG). Total: 74 variables y 3 estilos de efecto.
 
 ### 3.1 Color · neutros y estado
 
@@ -67,10 +69,13 @@ Cada variable de Figma tiene su nombre CSS en "code syntax Web". Archivos export
 | Administrador `rol/admin/*` | #5B3EBF / #A68BF7 | #ECE7FA / #2A2247 | #FFFFFF / #140A2B |
 | Técnico `rol/tecnico/*` | #A8480A / #F2915A | #FBEADC / #3B2214 | #FFFFFF / #2A1204 |
 | Cliente `rol/cliente/*` | #0C7A56 / #3FC596 | #DCF2E9 / #11302A | #FFFFFF / #04201A |
+| Coordinador `rol/coordinador/*` | #1F5FB8 / #7AAAF2 | #E3ECF9 / #172540 | #FFFFFF / #071A38 |
 
-CSS: `--color-role-{admin|tecnico|cliente}`, `-soft`, `-ink`. Rol activo: `--color-accent`, `--color-accent-soft`, `--color-accent-ink`.
+CSS: `--color-role-{admin|coordinador|tecnico|cliente}`, `-soft`, `-ink`. Rol activo: `--color-accent`, `--color-accent-soft`, `--color-accent-ink`.
 
 `ink` es el color del texto o icono **sobre** el color base (en oscuro el base es claro, por eso `ink` es oscuro).
+
+**Por qué azul para el Coordinador:** los tonos de los roles quedan repartidos en el círculo cromático (naranja ~25°, verde ~160°, azul ~215°, violeta ~255°), con la misma claridad y saturación media que los demás, y lejos del rojo de error y del ámbar de alerta. Contraste medido: blanco sobre #1F5FB8 = 6.2:1; #7AAAF2 sobre la superficie oscura = 7.4:1; `ink` sobre la base oscura = 7.3:1.
 
 ### 3.3 Iconos
 
@@ -159,7 +164,7 @@ Páginas de Figma: `DS · Fundamentos`, `DS · Átomos`, `DS · Células`, `DS �
 
 | Componente | Variantes y propiedades |
 |---|---|
-| Icono / Icono adicional | Biblioteca de iconos (incl. `configuracion`, chevron, marcar, ubicación, usuario-más, editar, opciones, cerrar, filtro, asignar, info, exportar, correo). Color por `icon/color`. |
+| Icono / Icono adicional | Biblioteca de iconos (incl. `configuracion`, `carga` (barras de carga), chevron, marcar, ubicación, usuario-más, editar, opciones, cerrar, filtro, asignar, info, exportar, correo). Color por `icon/color`. |
 | Botón | Tipo: Primary · Secondary · Ghost. Propiedad: Label. |
 | Badge | Tono: Neutro · Rol · Ok · Alerta · Error. |
 | Campo de texto (v1) | Reemplazado por **Campo**; se conserva solo por compatibilidad. |
@@ -184,12 +189,13 @@ Páginas de Figma: `DS · Fundamentos`, `DS · Átomos`, `DS · Células`, `DS �
 | Persona | Avatar + nombre + dato secundario. |
 | **Fila de ajuste** | Control: Interruptor · Selector. Propiedades: Título, Descripción, Valor. |
 | **Opción de tema** | Tema: Claro · Oscuro · Sistema × Estado: Elegida · Normal. |
+| **Fila de carga** | Carga: 0–5 × Disponible: Sí · No (12 variantes). Propiedades: Nombre, Especialidades, Acción. Segmentos en color del rol; ámbar al llegar a 5; gris si está en pausa. |
 
 ### 4.3 Organismos
 
 | Componente | Notas |
 |---|---|
-| Barra lateral (vigente) | Rol: Administrador · Técnico · Cliente. Menús por rol (ver 5.1). |
+| Barra lateral (vigente) | Rol: Administrador · Técnico · Cliente · Coordinador. Menús por rol (ver 5.1). |
 | Barra superior (vigente) | Propiedad Ruta (miga de pan); incluye Campana y Avatar. |
 | Panel de la campana | Panel rápido de notificaciones; usa Sombra/Popover. |
 | Encabezado de página | Título, subtítulo, acción opcional. |
@@ -204,13 +210,14 @@ Cuatro plantillas (`DS · Plantillas`) construidas sobre la estructura vigente: 
 
 ## 5. Pantallas
 
-Página `Wireframes v2 · Consolidado` (claro) y `Wireframes v2 · Oscuro` (mismas pantallas con el modo oscuro). Total: **24 pantallas**. Cada pantalla trae una tarjeta de anotaciones con arquitectura de la información, principios Gestalt y heurísticas de Nielsen.
+Página `Wireframes v2 · Consolidado` (claro) y `Wireframes v2 · Oscuro` (mismas pantallas con el modo oscuro). Total: **33 pantallas**. Cada pantalla trae una tarjeta de anotaciones con arquitectura de la información, principios Gestalt y heurísticas de Nielsen.
 
 ### 5.1 Menú lateral por rol
 
 | Rol | Secciones |
 |---|---|
-| Administrador | OPERACIÓN: Dashboard, Solicitudes · ADMINISTRACIÓN: Usuarios y técnicos, Clientes y sedes, Catálogos, Parámetros, Auditoría · CUENTA: Configuración |
+| Administrador | SEGUIMIENTO: Reportes, Solicitudes (consulta) · ADMINISTRACIÓN: Usuarios y técnicos, Clientes y sedes, Catálogos, Parámetros, Auditoría · CUENTA: Mi perfil, Configuración |
+| Coordinador | OPERACIÓN: Dashboard, Solicitudes, Carga del equipo · CONSULTA: Técnicos, Clientes y sedes · CUENTA: Mi perfil, Configuración |
 | Técnico | MI TRABAJO: Mi panel, Mis solicitudes · CUENTA: Mi perfil, Disponibilidad, Configuración |
 | Cliente | MIS SOLICITUDES: Mis solicitudes, Nueva solicitud · CUENTA: Mi perfil, Ayuda, Configuración |
 
@@ -218,17 +225,26 @@ Página `Wireframes v2 · Consolidado` (claro) y `Wireframes v2 · Oscuro` (mism
 
 | Código | Pantalla | Rol |
 |---|---|---|
-| A1 | Dashboard de indicadores | Administrador |
-| A2 | Solicitudes | Administrador |
-| A3 | Revisar y asignar | Administrador |
+| A1 | Reportes globales (cumplimiento, tiempos, datos maestros) | Administrador |
+| A2 | Solicitudes · solo consulta y auditoría | Administrador |
+| A3 | Mi perfil | Administrador |
 | A4 | Usuarios | Administrador |
 | A5 | Técnicos | Administrador |
 | A6 | Nuevo usuario | Administrador |
 | A7 | Clientes y sedes | Administrador |
 | A8 | Nuevo cliente | Administrador |
 | A9 | Catálogos | Administrador |
-| A10 | Notificaciones | Administrador |
+| A10 | Notificaciones (seguridad, cambios, reportes) | Administrador |
 | A11 | Configuración | Administrador |
+| CO1 | Dashboard operativo | Coordinador |
+| CO2 | Bandeja de solicitudes | Coordinador |
+| CO3 | Revisar y asignar (antes A3) | Coordinador |
+| CO4 | Carga del equipo (nueva) | Coordinador |
+| CO5 | Técnicos · consulta | Coordinador |
+| CO6 | Clientes y sedes · consulta | Coordinador |
+| CO7 | Notificaciones (operativas) | Coordinador |
+| CO8 | Mi perfil | Coordinador |
+| CO9 | Configuración | Coordinador |
 | T1 | Mi panel | Técnico |
 | T2–T4 | Flujo de solicitudes del técnico | Técnico |
 | T5 | Mi perfil | Técnico |
@@ -239,21 +255,33 @@ Página `Wireframes v2 · Consolidado` (claro) y `Wireframes v2 · Oscuro` (mism
 | C6 | Ayuda | Cliente |
 | C7 | Configuración | Cliente |
 
-Compartido: panel rápido de la campana (los 3 roles).
+Compartido: panel rápido de la campana (todos los roles).
 
-### 5.3 Pantalla de Configuración (A11 · T6 · C7)
+### 5.3 Pantalla de Configuración (A11 · CO9 · T6 · C7)
 
 Estructura común: encabezado → columna izquierda (**Apariencia** con 3 Opciones de tema, **Preferencias** con Filas de ajuste de tipo Selector, botones *Restablecer valores / Cancelar / Guardar cambios*) y columna derecha (**Qué avisos quiero recibir** y **Cómo los recibo**, con Filas de ajuste de tipo Interruptor).
 
 | Rol | Preferencias específicas | Avisos |
 |---|---|---|
-| Administrador | Cierre de sesión por inactividad | Solicitudes por aprobar, técnico en su límite de carga, solicitudes vencidas, resumen semanal |
+| Administrador | Cierre de sesión por inactividad | Accesos fallidos, cambios en catálogos, nuevos clientes y sedes, reporte mensual |
+| Coordinador | Página de inicio (Dashboard operativo) | Solicitudes por aprobar, técnico en su límite de carga, solicitudes vencidas, resumen diario |
 | Técnico | Página de inicio (Mi panel / Mis solicitudes) | Nueva solicitud asignada, recordatorio antes de vencer, el cliente respondió, resumen diario |
 | Cliente | Sede predeterminada (solo sedes registradas) | Cambios de estado, el técnico pide información, solicitud resuelta, recordatorios de respuesta |
 
 Común a los tres: idioma, zona horaria, formato de fecha, aviso por plataforma (siempre activo) y por correo.
 
 ---
+
+### 5.4 Reparto Administrador / Coordinador en las pantallas
+
+| Tema | Administrador | Coordinador |
+|---|---|---|
+| Inicio | A1 Reportes globales (gestión del período) | CO1 Dashboard operativo (cola del día) |
+| Solicitudes | A2 consulta: abre en "Todas", acción "Ver" | CO2 bandeja: abre en "Por aprobar", acción "Revisar" |
+| Aprobar y asignar | No en la interfaz (permiso de respaldo en la API) | CO3 Revisar y asignar + CO4 Carga del equipo |
+| Técnicos, clientes y sedes | Crear, editar, eliminar (A4–A8) | Solo consulta (CO5, CO6): sin botones de edición; la disponibilidad se muestra como etiqueta |
+| Catálogos, parámetros, auditoría | Sí (A9) | No (los usa en selectores) |
+| Notificaciones | Seguridad, cambios de datos maestros, reportes | Aprobaciones, límites de carga, vencimientos, respuestas |
 
 ## 6. Accesibilidad
 
@@ -264,7 +292,8 @@ Común a los tres: idioma, zona horaria, formato de fecha, aviso por plataforma 
 
 ## 7. Limitaciones conocidas
 
-- No hay pantalla de **Mi perfil** del Administrador ni pantalla de **Disponibilidad** del Técnico (ambas existen en el menú o se mencionan, pero no están diseñadas).
+- No hay pantalla de **Disponibilidad** del Técnico (está en su menú, pero no está diseñada).
+- El Administrador conserva en la API el permiso de aprobar y asignar (por si falta el Coordinador), pero su interfaz es de consulta.
 - La exportación a código es manual: cambia la variable en Figma, exporta de nuevo `tokens.css` y corre `python3 build_json.py tokens.css tokens.json`.
 - El interlineado es automático (`normal`).
 - Los componentes marcados (v1) se conservan solo por historial.
