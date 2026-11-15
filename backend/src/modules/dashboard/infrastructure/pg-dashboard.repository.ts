@@ -1,7 +1,7 @@
 import type { Database } from '../../../shared/db/database';
 import { ESTADOS_CARGA, sqlLista } from '../../../shared/domain/estados';
 import { SQL_ABIERTA, SQL_VENCIDA, sqlPorVencer } from '../../requests';
-import type { ConteosGenerales, DashboardRepository, FiltroIndicadores, Indicadores } from '../domain/indicadores';
+import type { ConteosGenerales, DashboardRepository, FilaPrioridad, FiltroIndicadores, Indicadores } from '../domain/indicadores';
 
 const BASE = `
     FROM solicitudes s
@@ -76,11 +76,15 @@ export class PgDashboardRepository implements DashboardRepository {
 
   porPrioridad(f: FiltroIndicadores) {
     const { where, params } = this.filtro(f);
-    return this.db.query<{ codigo: string; nombre: string; total: number; horas: number | null; resueltas: number }>(
-      `SELECT pr.codigo, pr.nombre, COALESCE(x.total, 0)::int AS total, x.horas, COALESCE(x.resueltas, 0)::int AS resueltas
+    return this.db.query<FilaPrioridad>(
+      `SELECT pr.codigo, pr.nombre, COALESCE(x.total, 0)::int AS total, x.horas, COALESCE(x.resueltas, 0)::int AS resueltas,
+              COALESCE(x.a_tiempo, 0)::int AS a_tiempo, COALESCE(x.fuera_de_plazo, 0)::int AS fuera_de_plazo
          FROM prioridades pr
          LEFT JOIN (SELECT s.prioridad_id, COUNT(*) AS total,
                            COUNT(s.fecha_resolucion) AS resueltas,
+                           COUNT(*) FILTER (WHERE s.fecha_resolucion IS NOT NULL AND s.fecha_resolucion <= s.fecha_limite) AS a_tiempo,
+                           COUNT(*) FILTER (WHERE (s.fecha_resolucion IS NOT NULL AND s.fecha_resolucion > s.fecha_limite)
+                                               OR ${SQL_VENCIDA}) AS fuera_de_plazo,
                            ROUND((AVG(${RESUELTA_EN_HORAS}) FILTER (WHERE s.fecha_resolucion IS NOT NULL))::numeric, 1) AS horas
                     ${BASE} ${where} GROUP BY s.prioridad_id) x ON x.prioridad_id = pr.id
         ORDER BY pr.orden`,

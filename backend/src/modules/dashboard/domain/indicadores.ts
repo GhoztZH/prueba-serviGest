@@ -24,7 +24,8 @@ export interface Indicadores {
   filtros: FiltroIndicadores;
   resumen: { total: number; abiertas: number; resueltas: number; cerradas: number; canceladas: number };
   porEstado: Array<{ codigo: string; nombre: string; total: number }>;
-  porPrioridad: Array<{ codigo: string; nombre: string; total: number }>;
+  /** Incluye el cumplimiento de plazos de cada prioridad (misma fórmula que el global). */
+  porPrioridad: Array<{ codigo: string; nombre: string; total: number; aTiempo: number; fueraDePlazo: number; cumplimiento: number | null }>;
   cargaPorTecnico: Array<{ tecnico_id: number; nombre: string; activas: number; maximo: number; disponible: boolean; resueltas: number }>;
   tiempoResolucion: { global: number | null; porPrioridad: Array<{ codigo: string; nombre: string; horas: number | null; resueltas: number }> };
   cumplimiento: { aTiempo: number; fueraDePlazo: number; porcentaje: number | null };
@@ -32,10 +33,20 @@ export interface Indicadores {
   evolucion: Array<{ fecha: string; creadas: number; resueltas: number }>;
 }
 
+export interface FilaPrioridad {
+  codigo: string;
+  nombre: string;
+  total: number;
+  horas: number | null;
+  resueltas: number;
+  a_tiempo: number;
+  fuera_de_plazo: number;
+}
+
 export interface DashboardRepository {
   generales(f: FiltroIndicadores, umbralPct: number): Promise<ConteosGenerales>;
   porEstado(f: FiltroIndicadores): Promise<Indicadores['porEstado']>;
-  porPrioridad(f: FiltroIndicadores): Promise<Array<{ codigo: string; nombre: string; total: number; horas: number | null; resueltas: number }>>;
+  porPrioridad(f: FiltroIndicadores): Promise<FilaPrioridad[]>;
   cargaPorTecnico(f: FiltroIndicadores): Promise<Indicadores['cargaPorTecnico']>;
   evolucion(f: FiltroIndicadores): Promise<Indicadores['evolucion']>;
 }

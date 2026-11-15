@@ -49,7 +49,14 @@ export class IndicadoresUseCase {
       filtros,
       resumen: { total: g.total, abiertas: g.abiertas, resueltas: g.resueltas, cerradas: g.cerradas, canceladas: g.canceladas },
       porEstado,
-      porPrioridad: prioridades.map(({ codigo, nombre, total }) => ({ codigo, nombre, total })),
+      porPrioridad: prioridades.map((p) => ({
+        codigo: p.codigo,
+        nombre: p.nombre,
+        total: p.total,
+        aTiempo: p.a_tiempo,
+        fueraDePlazo: p.fuera_de_plazo,
+        cumplimiento: porcentajeCumplimiento(p.a_tiempo, p.fuera_de_plazo),
+      })),
       cargaPorTecnico,
       tiempoResolucion: {
         global: g.horas_promedio,
