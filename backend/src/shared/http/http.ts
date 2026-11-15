@@ -2,6 +2,7 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { z, type ZodType } from 'zod';
 import type { AuthUser, Rol } from '../domain/auth-user';
 import { ForbiddenError, UnauthorizedError, ValidationError } from '../domain/errors';
+import { motivoPasswordInvalida } from '../domain/password-policy';
 
 declare module 'express-serve-static-core' {
   interface Request {
@@ -56,28 +57,7 @@ export const paginacionSchema = z.object({
   limit: z.coerce.number({ error: 'Debe ser un número' }).int().min(1, 'Mínimo 1').max(100, 'Máximo 100').default(10),
 });
 
-export interface Paginacion {
-  page: number;
-  limit: number;
-}
-
-export interface Meta extends Paginacion {
-  total: number;
-  totalPages: number;
-}
-
-export interface Pagina<T> {
-  data: T[];
-  meta: Meta;
-}
-
-export function pagina<T>(data: T[], total: number, { page, limit }: Paginacion): Pagina<T> {
-  return { data, meta: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) } };
-}
-
-export function offsetDe({ page, limit }: Paginacion): number {
-  return (page - 1) * limit;
-}
+export { offsetDe, pagina, type Meta, type Pagina, type Paginacion } from "../application/pagination";
 
 // ---- Esquemas reutilizables ----------------------------------------------
 
@@ -107,3 +87,10 @@ export const emailSchema = z
 
 export const enteroPositivo = (campo: string) =>
   z.coerce.number({ error: `${campo} debe ser un número` }).int(`${campo} debe ser un entero`).min(1, `${campo} es obligatorio`);
+
+export const passwordSchema = z
+  .string({ error: 'La contraseña es obligatoria' })
+  .superRefine((valor, ctx) => {
+    const motivo = motivoPasswordInvalida(valor);
+    if (motivo) ctx.addIssue({ code: 'custom', message: motivo });
+  });
