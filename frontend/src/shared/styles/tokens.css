@@ -1,0 +1,221 @@
+/* ServiGest · tokens de diseño
+ * Generado desde Figma (archivo ServiGest). No editar a mano: cambia la variable en Figma y vuelve a exportar.
+ * Tema claro = "Empresarial AA"; oscuro = "Empresarial AA · Oscuro".
+ * Uso: <html data-theme="light|dark" data-role="admin|coordinador|tecnico|cliente">
+ */
+
+:root {
+  color-scheme: light;
+  --color-bg: #F6F7F9;
+  --color-surface: #FFFFFF;
+  --color-border: #E2E5EA;
+  --color-text: #171A21;
+  --color-text-muted: #586273;
+  --color-fill-subtle: #ECEEF2;
+  --color-control-border: #8B93A1;
+  --color-text-disabled: #9AA3B2;
+  --color-overlay: rgba(23, 26, 33, 0.5);
+  --color-success: #146C43;
+  --color-warning: #8A5300;
+  --color-danger: #B42318;
+  --color-success-soft: #E0F4E8;
+  --color-warning-soft: #FDF0D5;
+  --color-danger-soft: #FDE5E2;
+  --color-role-admin: #5B3EBF;
+  --color-role-admin-soft: #ECE7FA;
+  --color-role-admin-ink: #FFFFFF;
+  --color-role-tecnico: #A8480A;
+  --color-role-tecnico-soft: #FBEADC;
+  --color-role-tecnico-ink: #FFFFFF;
+  --color-role-cliente: #0C7A56;
+  --color-role-cliente-soft: #DCF2E9;
+  --color-role-cliente-ink: #FFFFFF;
+  --color-role-coordinador: #1F5FB8;
+  --color-role-coordinador-soft: #E3ECF9;
+  --color-role-coordinador-ink: #FFFFFF;
+
+  /* Rol por defecto: administrador */
+  --color-accent: var(--color-role-admin);
+  --color-accent-soft: var(--color-role-admin-soft);
+  --color-accent-ink: var(--color-role-admin-ink);
+
+  /* Espaciado y radios */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Tipografía */
+  --font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --text-titulo-pagina-size: 22px;
+  --text-titulo-pagina-weight: 700;
+  --text-titulo-pagina-line: normal;
+  --text-titulo-seccion-size: 18px;
+  --text-titulo-seccion-weight: 700;
+  --text-titulo-seccion-line: normal;
+  --text-titulo-tarjeta-size: 14px;
+  --text-titulo-tarjeta-weight: 600;
+  --text-titulo-tarjeta-line: normal;
+  --text-cuerpo-normal-size: 13px;
+  --text-cuerpo-normal-weight: 400;
+  --text-cuerpo-normal-line: normal;
+  --text-cuerpo-medio-size: 13px;
+  --text-cuerpo-medio-weight: 500;
+  --text-cuerpo-medio-line: normal;
+  --text-etiqueta-size: 12px;
+  --text-etiqueta-weight: 500;
+  --text-etiqueta-line: normal;
+  --text-nota-size: 12px;
+  --text-nota-weight: 400;
+  --text-nota-line: normal;
+  --text-sobretitulo-size: 11px;
+  --text-sobretitulo-weight: 600;
+  --text-sobretitulo-line: normal;
+  --text-cifra-grande-size: 28px;
+  --text-cifra-grande-weight: 700;
+  --text-cifra-grande-line: normal;
+
+  /* Tamaños */
+  --size-control-sm: 32px;
+  --size-control-md: 36px;
+  --size-control-lg: 44px;
+  --size-icon-sm: 16px;
+  --size-icon-md: 18px;
+  --size-icon-lg: 24px;
+  --size-avatar-s: 24px;
+  --size-avatar-m: 32px;
+  --size-avatar-l: 48px;
+  --size-avatar-xl: 72px;
+  --size-sidebar: 240px;
+  --size-topbar: 64px;
+  --size-table-header: 36px;
+  --size-table-row: 44px;
+  --border-width: 1px;
+  --border-width-strong: 2px;
+
+  /* Movimiento */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --easing-enter: cubic-bezier(0, 0, 0, 1);
+  --easing-exit: cubic-bezier(0.3, 0, 1, 1);
+
+  /* Capas, breakpoints y opacidad */
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-overlay: 1200;
+  --z-modal: 1300;
+  --z-toast: 1400;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 1024px;
+  --breakpoint-lg: 1280px;
+  --breakpoint-xl: 1536px;
+  --opacity-disabled: 0.4;
+
+  /* Sombras y foco (estilos de efecto de Figma) */
+  --shadow-popover: 0 8px 24px rgba(0, 0, 0, 0.14);
+  --shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.24);
+  --focus-ring: 0 0 0 3px var(--color-accent);
+
+  /* Iconos (equivalen a los modos de la variable icon/color) */
+  --icon-muted: var(--color-text-muted);
+  --icon-accent: var(--color-accent);
+  --icon-on-accent: var(--color-accent-ink);
+  --icon-text: var(--color-text);
+}
+
+/* Tema oscuro explícito */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #0E1116;
+  --color-surface: #161A21;
+  --color-border: #2B313C;
+  --color-text: #ECEFF4;
+  --color-text-muted: #9BA4B3;
+  --color-fill-subtle: #1E232C;
+  --color-control-border: #667085;
+  --color-text-disabled: #596273;
+  --color-overlay: rgba(0, 0, 0, 0.6);
+  --color-success: #4CC38A;
+  --color-warning: #E5B04D;
+  --color-danger: #F47C72;
+  --color-success-soft: #12281F;
+  --color-warning-soft: #2E2410;
+  --color-danger-soft: #3B1816;
+  --color-role-admin: #A68BF7;
+  --color-role-admin-soft: #2A2247;
+  --color-role-admin-ink: #140A2B;
+  --color-role-tecnico: #F2915A;
+  --color-role-tecnico-soft: #3B2214;
+  --color-role-tecnico-ink: #2A1204;
+  --color-role-cliente: #3FC596;
+  --color-role-cliente-soft: #11302A;
+  --color-role-cliente-ink: #04201A;
+  --color-role-coordinador: #7AAAF2;
+  --color-role-coordinador-soft: #172540;
+  --color-role-coordinador-ink: #071A38;
+}
+
+/* Tema oscuro según el sistema, si no se fijó un tema */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --color-bg: #0E1116;
+    --color-surface: #161A21;
+    --color-border: #2B313C;
+    --color-text: #ECEFF4;
+    --color-text-muted: #9BA4B3;
+    --color-fill-subtle: #1E232C;
+    --color-control-border: #667085;
+    --color-text-disabled: #596273;
+    --color-overlay: rgba(0, 0, 0, 0.6);
+    --color-success: #4CC38A;
+    --color-warning: #E5B04D;
+    --color-danger: #F47C72;
+    --color-success-soft: #12281F;
+    --color-warning-soft: #2E2410;
+    --color-danger-soft: #3B1816;
+    --color-role-admin: #A68BF7;
+    --color-role-admin-soft: #2A2247;
+    --color-role-admin-ink: #140A2B;
+    --color-role-tecnico: #F2915A;
+    --color-role-tecnico-soft: #3B2214;
+    --color-role-tecnico-ink: #2A1204;
+    --color-role-cliente: #3FC596;
+    --color-role-cliente-soft: #11302A;
+    --color-role-cliente-ink: #04201A;
+    --color-role-coordinador: #7AAAF2;
+    --color-role-coordinador-soft: #172540;
+    --color-role-coordinador-ink: #071A38;
+  }
+}
+
+/* Roles */
+[data-role="admin"] {
+  --color-accent: var(--color-role-admin);
+  --color-accent-soft: var(--color-role-admin-soft);
+  --color-accent-ink: var(--color-role-admin-ink);
+}
+[data-role="coordinador"] {
+  --color-accent: var(--color-role-coordinador);
+  --color-accent-soft: var(--color-role-coordinador-soft);
+  --color-accent-ink: var(--color-role-coordinador-ink);
+}
+[data-role="tecnico"] {
+  --color-accent: var(--color-role-tecnico);
+  --color-accent-soft: var(--color-role-tecnico-soft);
+  --color-accent-ink: var(--color-role-tecnico-ink);
+}
+[data-role="cliente"] {
+  --color-accent: var(--color-role-cliente);
+  --color-accent-soft: var(--color-role-cliente-soft);
+  --color-accent-ink: var(--color-role-cliente-ink);
+}

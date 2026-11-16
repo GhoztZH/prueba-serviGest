@@ -12,6 +12,17 @@ info:
     **Roles:** `ADMIN`, `COORDINADOR`, `TECNICO`, `CLIENTE`. El backend verifica la autorización
     en cada operación protegida.
 
+    **Reparto de funciones por rol:**
+    - `ADMIN` (el sistema): CRUD de usuarios, técnicos, clientes y sedes, catálogos, parámetros y
+      auditoría; consulta de los indicadores globales. También puede ejecutar las acciones operativas
+      del coordinador.
+    - `COORDINADOR` (la operación): recibe, prioriza, aprueba, asigna y reasigna solicitudes y les da
+      seguimiento hasta que se atienden. Consulta técnicos, clientes y sedes, catálogos y parámetros.
+      **No crea, edita ni elimina datos maestros** (usuarios, técnicos, clientes, sedes, catálogos,
+      parámetros); en esas operaciones recibe `403 PROHIBIDO`.
+    - `TECNICO`: atiende las solicitudes que se le asignan y gestiona su propia disponibilidad.
+    - `CLIENTE`: registra y sigue las solicitudes de su empresa.
+
     **Formato de error (todas las respuestas 4xx/5xx):**
     ```json
     { "error": { "code": "REGLA_NEGOCIO", "message": "Texto legible", "details": [] } }
@@ -38,7 +49,10 @@ tags:
   - name: Auth
     description: Sesión, token JWT y gestión de la propia contraseña.
   - name: Solicitudes
-    description: Ciclo de vida de la solicitud de servicio (estados, asignación, historial, adjuntos).
+    description: |
+      Ciclo de vida de la solicitud de servicio (estados, asignación, historial, adjuntos).
+      El COORDINADOR (y el ADMIN) reciben, priorizan, aprueban, asignan y reasignan; el seguimiento
+      se hace con el listado, el historial y los comentarios.
   - name: Dashboard
     description: Indicadores agregados (cumplimiento, carga por técnico, evolución).
   - name: Notificaciones
@@ -49,12 +63,22 @@ tags:
       razón social; es independiente del correo de acceso (`cuenta.email` al crear, equivalente a
       `usuarios.email`) y no se sincroniza con él (ver migración 003: ambas columnas quedaron
       documentadas en el esquema para evitar que se trate como dato duplicado).
+
+      Alta, edición y baja de clientes y sedes: solo ADMIN. Consulta: ADMIN y COORDINADOR
+      (solo lectura); un CLIENTE solo ve la suya.
   - name: Técnicos
-    description: Personal técnico, sus especialidades y disponibilidad/carga.
+    description: >-
+      Personal técnico, sus especialidades y disponibilidad/carga. Alta, edición y baja: solo ADMIN.
+      El COORDINADOR los consulta (carga, especialidad, disponibilidad) para asignar. El técnico
+      cambia solo su propia disponibilidad.
   - name: Catálogos
-    description: Especialidades, categorías, prioridades (SLA), estados y parámetros operativos.
+    description: >-
+      Especialidades, categorías, prioridades (SLA), estados y parámetros operativos. Consulta para
+      los usuarios autenticados (parámetros: ADMIN y COORDINADOR); alta, edición y baja: solo ADMIN.
   - name: Usuarios
-    description: Cuentas internas (ADMIN/COORDINADOR). El correo aquí es siempre el de acceso (login).
+    description: >-
+      Cuentas internas (ADMIN/COORDINADOR). Todo este grupo es solo para ADMIN. El correo aquí es
+      siempre el de acceso (login).
   - name: Auditoría
     description: Registro de auditoría general, inalterable (trigger de bloqueo de UPDATE/DELETE).
 
@@ -168,7 +192,7 @@ paths:
       summary: Listado paginado y filtrado
       description: |
         Alcance por rol: CLIENTE ve solo las de su empresa; TECNICO solo las asignadas a él;
-        ADMIN y COORDINADOR ven todas. Cada elemento incluye `estado_plazo` calculado en el backend.
+        ADMIN y COORDINADOR ven todas (el seguimiento operativo). Cada elemento incluye `estado_plazo` calculado en el backend.
       parameters:
         - { $ref: '#/components/parameters/page' }
         - { $ref: '#/components/parameters/limit' }
@@ -399,7 +423,7 @@ paths:
       summary: Obtener métricas
       description: |
         Indicadores calculados desde la base de datos. Por defecto, los últimos 30 días.
-        El alcance depende del rol (cliente: su empresa; técnico: sus solicitudes).
+        El alcance depende del rol (cliente: su empresa; técnico: sus solicitudes; ADMIN y COORDINADOR: global).
       parameters:
         - { name: desde, in: query, schema: { type: string, format: date } }
         - { name: hasta, in: query, schema: { type: string, format: date } }
@@ -461,7 +485,7 @@ paths:
         '200': { description: Página de clientes }
     post:
       tags: [Clientes]
-      summary: Crear cliente con sedes y cuenta de acceso opcional
+      summary: Crear cliente con sedes y cuenta de acceso opcional (solo ADMIN)
       requestBody:
         required: true
         content:
@@ -469,6 +493,7 @@ paths:
             schema: { $ref: '#/components/schemas/ClienteNuevo' }
       responses:
         '201': { description: Creado }
+        '403': { $ref: '#/components/responses/Prohibido' }
         '409': { $ref: '#/components/responses/Conflicto' }
         '422': { $ref: '#/components/responses/Validacion' }
   /api/clientes/{id}:
@@ -481,45 +506,47 @@ paths:
         '404': { $ref: '#/components/responses/NoEncontrado' }
     put:
       tags: [Clientes]
-      summary: Actualizar cliente (desactivar también desactiva su cuenta)
+      summary: Actualizar cliente (solo ADMIN; desactivar también desactiva su cuenta)
       requestBody:
         content:
           application/json:
             schema: { $ref: '#/components/schemas/ClienteNuevo' }
       responses:
         '200': { description: Actualizado }
+        '403': { $ref: '#/components/responses/Prohibido' }
     delete:
       tags: [Clientes]
       summary: Eliminar cliente (solo si no tiene solicitudes; ADMIN)
       responses:
         '204': { description: Eliminado }
+        '403': { $ref: '#/components/responses/Prohibido' }
         '409': { $ref: '#/components/responses/Conflicto' }
   /api/clientes/{id}/sedes:
     parameters: [{ $ref: '#/components/parameters/id' }]
     get:
       tags: [Clientes]
-      summary: Sedes del cliente
+      summary: Sedes del cliente (ADMIN, COORDINADOR; el CLIENTE solo las suyas)
       responses: { '200': { description: Sedes } }
     post:
       tags: [Clientes]
-      summary: Crear sede
+      summary: Crear sede (solo ADMIN)
       requestBody:
         content:
           application/json:
             schema: { type: object, required: [nombre, direccion], properties: { nombre: { type: string }, direccion: { type: string } } }
-      responses: { '201': { description: Creada } }
+      responses: { '201': { description: Creada }, '403': { $ref: '#/components/responses/Prohibido' } }
   /api/clientes/{id}/sedes/{sedeId}:
     parameters:
       - { $ref: '#/components/parameters/id' }
       - { name: sedeId, in: path, required: true, schema: { type: integer } }
     put:
       tags: [Clientes]
-      summary: Actualizar sede
-      responses: { '200': { description: Actualizada } }
+      summary: Actualizar sede (solo ADMIN)
+      responses: { '200': { description: Actualizada }, '403': { $ref: '#/components/responses/Prohibido' } }
     delete:
       tags: [Clientes]
-      summary: Eliminar sede (sin solicitudes)
-      responses: { '204': { description: Eliminada }, '409': { $ref: '#/components/responses/Conflicto' } }
+      summary: Eliminar sede (sin solicitudes; solo ADMIN)
+      responses: { '204': { description: Eliminada }, '403': { $ref: '#/components/responses/Prohibido' }, '409': { $ref: '#/components/responses/Conflicto' } }
 
   /api/tecnicos:
     get:
@@ -541,12 +568,13 @@ paths:
             schema: { $ref: '#/components/schemas/TecnicoNuevo' }
       responses:
         '201': { description: Creado }
+        '403': { $ref: '#/components/responses/Prohibido' }
         '409': { $ref: '#/components/responses/Conflicto' }
   /api/tecnicos/{id}:
     parameters: [{ $ref: '#/components/parameters/id' }]
     get: { tags: [Técnicos], summary: Detalle de técnico, responses: { '200': { description: Técnico } } }
-    put: { tags: [Técnicos], summary: Actualizar técnico (especialidades, disponibilidad, carga máxima), responses: { '200': { description: Actualizado } } }
-    delete: { tags: [Técnicos], summary: Eliminar técnico sin asignaciones (ADMIN), responses: { '204': { description: Eliminado }, '409': { $ref: '#/components/responses/Conflicto' } } }
+    put: { tags: [Técnicos], summary: 'Actualizar técnico (solo ADMIN: especialidades, disponibilidad, carga máxima)', responses: { '200': { description: Actualizado }, '403': { $ref: '#/components/responses/Prohibido' } } }
+    delete: { tags: [Técnicos], summary: Eliminar técnico sin asignaciones (ADMIN), responses: { '204': { description: Eliminado }, '403': { $ref: '#/components/responses/Prohibido' }, '409': { $ref: '#/components/responses/Conflicto' } } }
   /api/tecnicos/me/disponibilidad:
     patch:
       tags: [Técnicos]
@@ -564,11 +592,11 @@ paths:
       summary: Crear especialidad (ADMIN)
       requestBody:
         content: { application/json: { schema: { type: object, required: [nombre], properties: { nombre: { type: string }, descripcion: { type: string } } } } }
-      responses: { '201': { description: Creada }, '409': { $ref: '#/components/responses/Conflicto' } }
+      responses: { '201': { description: Creada }, '403': { $ref: '#/components/responses/Prohibido' }, '409': { $ref: '#/components/responses/Conflicto' } }
   /api/especialidades/{id}:
     parameters: [{ $ref: '#/components/parameters/id' }]
-    put: { tags: [Catálogos], summary: Actualizar especialidad, responses: { '200': { description: OK } } }
-    delete: { tags: [Catálogos], summary: Eliminar especialidad sin dependencias, responses: { '204': { description: OK }, '409': { $ref: '#/components/responses/Conflicto' } } }
+    put: { tags: [Catálogos], summary: Actualizar especialidad (solo ADMIN), responses: { '200': { description: OK }, '403': { $ref: '#/components/responses/Prohibido' } } }
+    delete: { tags: [Catálogos], summary: Eliminar especialidad sin dependencias (solo ADMIN), responses: { '204': { description: OK }, '403': { $ref: '#/components/responses/Prohibido' }, '409': { $ref: '#/components/responses/Conflicto' } } }
   /api/categorias:
     get: { tags: [Catálogos], summary: Listar categorías de servicio, responses: { '200': { description: OK } } }
     post:
@@ -576,11 +604,11 @@ paths:
       summary: Crear categoría (ADMIN)
       requestBody:
         content: { application/json: { schema: { type: object, required: [nombre, especialidad_id], properties: { nombre: { type: string }, descripcion: { type: string }, especialidad_id: { type: integer } } } } }
-      responses: { '201': { description: Creada } }
+      responses: { '201': { description: Creada }, '403': { $ref: '#/components/responses/Prohibido' } }
   /api/categorias/{id}:
     parameters: [{ $ref: '#/components/parameters/id' }]
-    put: { tags: [Catálogos], summary: Actualizar categoría, responses: { '200': { description: OK } } }
-    delete: { tags: [Catálogos], summary: Eliminar categoría sin solicitudes, responses: { '204': { description: OK }, '409': { $ref: '#/components/responses/Conflicto' } } }
+    put: { tags: [Catálogos], summary: Actualizar categoría (solo ADMIN), responses: { '200': { description: OK }, '403': { $ref: '#/components/responses/Prohibido' } } }
+    delete: { tags: [Catálogos], summary: Eliminar categoría sin solicitudes (solo ADMIN), responses: { '204': { description: OK }, '403': { $ref: '#/components/responses/Prohibido' }, '409': { $ref: '#/components/responses/Conflicto' } } }
   /api/prioridades:
     get: { tags: [Catálogos], summary: Prioridades y su plazo en horas, responses: { '200': { description: OK } } }
   /api/prioridades/{id}:
@@ -590,11 +618,11 @@ paths:
       parameters: [{ $ref: '#/components/parameters/id' }]
       requestBody:
         content: { application/json: { schema: { type: object, properties: { nombre: { type: string }, horas_plazo: { type: integer } } } } }
-      responses: { '200': { description: OK } }
+      responses: { '200': { description: OK }, '403': { $ref: '#/components/responses/Prohibido' } }
   /api/estados:
     get: { tags: [Catálogos], summary: Estados del ciclo de vida, responses: { '200': { description: OK } } }
   /api/parametros:
-    get: { tags: [Catálogos], summary: Parámetros operativos (ADMIN, COORDINADOR), responses: { '200': { description: OK } } }
+    get: { tags: [Catálogos], summary: 'Parámetros operativos (ADMIN, COORDINADOR)', responses: { '200': { description: OK } } }
   /api/parametros/{clave}:
     put:
       tags: [Catálogos]
@@ -602,13 +630,13 @@ paths:
       parameters: [{ name: clave, in: path, required: true, schema: { type: string, example: UMBRAL_POR_VENCER_PCT } }]
       requestBody:
         content: { application/json: { schema: { type: object, required: [valor], properties: { valor: { type: string } } } } }
-      responses: { '200': { description: OK }, '422': { $ref: '#/components/responses/Validacion' } }
+      responses: { '200': { description: OK }, '403': { $ref: '#/components/responses/Prohibido' }, '422': { $ref: '#/components/responses/Validacion' } }
 
   /api/usuarios:
-    get: { tags: [Usuarios], summary: Listar usuarios (ADMIN), responses: { '200': { description: OK } } }
+    get: { tags: [Usuarios], summary: Listar usuarios (ADMIN), responses: { '200': { description: OK }, '403': { $ref: '#/components/responses/Prohibido' } } }
     post:
       tags: [Usuarios]
-      summary: Crear usuario ADMIN o COORDINADOR
+      summary: Crear usuario ADMIN o COORDINADOR (solo ADMIN)
       requestBody:
         content:
           application/json:
@@ -620,15 +648,15 @@ paths:
                 email: { type: string }
                 password: { type: string }
                 rol: { type: string, enum: [ADMIN, COORDINADOR] }
-      responses: { '201': { description: Creado }, '409': { $ref: '#/components/responses/Conflicto' } }
+      responses: { '201': { description: Creado }, '403': { $ref: '#/components/responses/Prohibido' }, '409': { $ref: '#/components/responses/Conflicto' } }
   /api/usuarios/{id}:
     parameters: [{ $ref: '#/components/parameters/id' }]
-    get: { tags: [Usuarios], summary: Detalle, responses: { '200': { description: OK } } }
-    put: { tags: [Usuarios], summary: Actualizar nombre, correo o vigencia, responses: { '200': { description: OK } } }
+    get: { tags: [Usuarios], summary: Detalle (solo ADMIN), responses: { '200': { description: OK }, '403': { $ref: '#/components/responses/Prohibido' } } }
+    put: { tags: [Usuarios], summary: 'Actualizar nombre, correo o vigencia (solo ADMIN)', responses: { '200': { description: OK }, '403': { $ref: '#/components/responses/Prohibido' } } }
   /api/usuarios/{id}/reset-password:
     post:
       tags: [Usuarios]
-      summary: Restablecimiento controlado por el administrador
+      summary: Restablecimiento controlado por el administrador (solo ADMIN)
       parameters: [{ $ref: '#/components/parameters/id' }]
       requestBody:
         content: { application/json: { schema: { type: object, required: [password], properties: { password: { type: string } } } } }

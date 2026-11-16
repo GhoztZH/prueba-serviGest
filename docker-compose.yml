@@ -1,0 +1,77 @@
+# ServiGest Ecuador · despliegue con Docker Compose
+#   Levantar:  docker compose up --build
+#   Detener:   docker compose down          (conserva los datos)
+#   NO usar `down -v` como procedimiento normal: elimina los volúmenes persistentes.
+name: servigest
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Defina POSTGRES_DB en .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Defina POSTGRES_USER en .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD en .env}
+      TZ: ${APP_TIMEZONE:-America/Guayaquil}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    networks: [interna]
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET en .env}
+      JWT_EXPIRES_MIN: ${JWT_EXPIRES_MIN:-480}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
+      UPLOADS_DIR: /app/uploads
+      APP_TIMEZONE: ${APP_TIMEZONE:-America/Guayaquil}
+      HORAS_EXPIRACION_RESET: ${HORAS_EXPIRACION_RESET:-1}
+      LOGIN_RATE_MAX: ${LOGIN_RATE_MAX:-10}
+      SEED_DEMO: ${SEED_DEMO:-false}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    depends_on:
+      postgres:
+        condition: service_healthy   # el backend no arranca contra una base que aún no acepta conexiones
+    volumes:
+      - uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    networks: [interna]
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-8080}:8080"   # único puerto publicado: la API se sirve por /api (proxy inverso)
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    networks: [interna]
+
+volumes:
+  pgdata:    # datos de PostgreSQL
+  uploads:   # adjuntos de las solicitudes
+
+networks:
+  interna:
+    driver: bridge

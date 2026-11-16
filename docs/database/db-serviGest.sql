@@ -18,8 +18,14 @@
 CREATE TABLE roles (
     id          SMALLSERIAL PRIMARY KEY,
     codigo      VARCHAR(20)  NOT NULL UNIQUE,
-    nombre      VARCHAR(60)  NOT NULL
+    nombre      VARCHAR(60)  NOT NULL,
+    CONSTRAINT ck_roles_codigo CHECK (codigo IN ('ADMIN','COORDINADOR','TECNICO','CLIENTE'))
 );
+
+COMMENT ON TABLE roles IS
+    'Roles del sistema: ADMIN, COORDINADOR, TECNICO y CLIENTE. Los códigos coinciden con el claim de rol de la API (openapi.yaml).';
+COMMENT ON COLUMN roles.codigo IS
+    'ADMIN = el sistema: CRUD de usuarios, técnicos, clientes, sedes, catálogos, parámetros y auditoría; reportes globales (también puede ejecutar las acciones del coordinador). COORDINADOR = la operación: recibe, prioriza, aprueba, asigna y reasigna solicitudes y les da seguimiento; no crea ni edita datos maestros. TECNICO = atiende las solicitudes que se le asignan. CLIENTE = registra y sigue las solicitudes de su empresa.';
 
 CREATE TABLE usuarios (
     id              SERIAL PRIMARY KEY,
@@ -34,6 +40,9 @@ CREATE TABLE usuarios (
     CONSTRAINT ck_usuarios_email CHECK (email = LOWER(email) AND email LIKE '%_@_%')
 );
 CREATE UNIQUE INDEX ux_usuarios_email ON usuarios (email);
+
+COMMENT ON COLUMN usuarios.rol_id IS
+    'Rol de la cuenta. Un usuario COORDINADOR no tiene tabla de perfil propia (a diferencia de tecnicos y clientes): su alcance es global y no se restringe por sede ni por equipo.';
 CREATE INDEX ix_usuarios_rol ON usuarios (rol_id);
 
 -- Tokens JWT revocados (cierre de sesión)
@@ -218,6 +227,9 @@ CREATE TABLE asignaciones (
 );
 CREATE UNIQUE INDEX ux_asignaciones_activa ON asignaciones (solicitud_id) WHERE activa;
 CREATE INDEX ix_asignaciones_tecnico ON asignaciones (tecnico_id);
+
+COMMENT ON COLUMN asignaciones.asignado_por IS
+    'Usuario ADMIN o COORDINADOR que asignó o reasignó al técnico; queda además en historial_solicitudes (ASIGNACION / REASIGNACION).';
 
 -- Historial inalterable de la solicitud (transiciones, asignaciones, comentarios)
 CREATE TABLE historial_solicitudes (

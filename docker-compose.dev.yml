@@ -1,0 +1,10 @@
+# Complemento de DESARROLLO. Publica PostgreSQL y la API en el host para
+# trabajar con `npm run dev` y ejecutar las pruebas de integración.
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres
+services:
+  postgres:
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+  backend:
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
